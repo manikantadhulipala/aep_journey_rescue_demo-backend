@@ -1,0 +1,11 @@
+customer_id,travel_intent_score,price_sensitivity_score,travel_intent_segment,updated_at
+C001,0.91,0.42,High Intent,2026-09-21T00:00:00Z
+C002,0.58,0.71,Moderate Intent,2026-09-26T00:00:00Z
+C003,0.95,0.35,High Intent,2026-09-20T00:00:00Z
+C004,0.78,0.55,High Intent,2026-09-23T00:00:00Z
+C005,0.88,0.62,High Intent,2026-09-19T00:00:00Z
+C006,0.93,0.39,High Intent,2026-09-29T00:00:00Z
+C007,0.74,0.66,Moderate Intent,2026-09-28T00:00:00Z
+C008,0.86,0.48,High Intent,2026-09-22T00:00:00Z
+C009,0.69,0.73,Moderate Intent,2026-09-16T00:00:00Z
+C010,0.90,0.44,High Intent,2026-09-20T00:00:00Z

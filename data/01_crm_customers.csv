@@ -1,0 +1,11 @@
+customer_id,email,first_name,last_name,state,home_airport,loyalty_tier,marketing_consent
+C001,alex.morgan@example.com,Alex,Morgan,CA,LAX,GOLD,true
+C002,jordan.lee@example.com,Jordan,Lee,WA,SEA,SILVER,true
+C003,sam.patel@example.com,Sam,Patel,CA,SFO,PLATINUM,true
+C004,taylor.brown@example.com,Taylor,Brown,TX,AUS,GOLD,true
+C005,casey.chen@example.com,Casey,Chen,CA,LAX,SILVER,false
+C006,riley.johnson@example.com,Riley,Johnson,NY,JFK,PLATINUM,true
+C007,jamie.kim@example.com,Jamie,Kim,WA,SEA,GOLD,true
+C008,morgan.davis@example.com,Morgan,Davis,CA,SAN,GOLD,true
+C009,avery.wilson@example.com,Avery,Wilson,FL,MIA,SILVER,true
+C010,quinn.martin@example.com,Quinn,Martin,CA,SJC,PLATINUM,true

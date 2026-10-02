@@ -1,0 +1,9 @@
+event_id,customer_id,event_type,destination,app_session_id,event_time
+M001,C001,app_open,Hawaii,APP2001,2026-09-21T13:15:00Z
+M002,C003,app_open,Japan,APP2003,2026-09-19T09:12:00Z
+M003,C003,push_offer_open,Japan,APP2003,2026-09-19T09:18:00Z
+M004,C004,app_open,Europe,APP2004,2026-09-23T08:55:00Z
+M005,C006,app_open,Hawaii,APP2006,2026-09-29T11:05:00Z
+M006,C008,app_open,Hawaii,APP2008,2026-09-22T07:40:00Z
+M007,C010,app_open,Japan,APP2010,2026-09-20T12:10:00Z
+M008,C007,push_offer_open,Canada,APP2007,2026-09-28T16:30:00Z

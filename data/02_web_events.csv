@@ -1,0 +1,18 @@
+event_id,customer_id,event_type,destination,session_id,event_time
+W001,C001,flight_search,Hawaii,WEB1001,2026-09-20T14:10:00Z
+W002,C001,flight_detail_view,Hawaii,WEB1001,2026-09-20T14:15:00Z
+W003,C001,booking_abandoned,Hawaii,WEB1001,2026-09-20T14:42:00Z
+W004,C002,flight_search,New York,WEB1002,2026-09-25T12:05:00Z
+W005,C003,flight_search,Japan,WEB1003,2026-09-18T16:25:00Z
+W006,C003,flight_detail_view,Japan,WEB1003,2026-09-18T16:40:00Z
+W007,C003,booking_abandoned,Japan,WEB1003,2026-09-18T17:05:00Z
+W008,C004,flight_search,Europe,WEB1004,2026-09-22T11:10:00Z
+W009,C006,flight_search,Hawaii,WEB1006,2026-09-28T10:10:00Z
+W010,C006,flight_detail_view,Hawaii,WEB1006,2026-09-28T10:18:00Z
+W011,C006,booking_abandoned,Hawaii,WEB1006,2026-09-28T10:47:00Z
+W012,C007,flight_search,Canada,WEB1007,2026-09-27T09:30:00Z
+W013,C008,flight_search,Hawaii,WEB1008,2026-09-21T18:30:00Z
+W014,C008,booking_abandoned,Hawaii,WEB1008,2026-09-21T18:52:00Z
+W015,C009,flight_search,Mexico,WEB1009,2026-09-15T20:05:00Z
+W016,C010,flight_search,Japan,WEB1010,2026-09-19T21:20:00Z
+W017,C010,booking_abandoned,Japan,WEB1010,2026-09-19T21:44:00Z
