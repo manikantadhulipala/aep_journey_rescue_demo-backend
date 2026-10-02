@@ -10,7 +10,7 @@
     "start": "node dist/server.js",
     "db:migrate": "tsx src/migrate.ts",
     "seed": "tsx src/seed.ts",
-    "test": "tsx --test src/*.test.ts",
+    "test": "tsx --test src/app.integration.test.ts src/assistant.test.ts src/audience.test.ts src/validation.test.ts",
     "test:postgres": "tsx --test src/postgres.integration.test.ts",
     "test:watch": "tsx --test --watch src/*.test.ts"
   },
