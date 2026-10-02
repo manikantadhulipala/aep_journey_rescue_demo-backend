@@ -1,4 +1,4 @@
-# Journey Rescue API
+# aep_journey_rescue_demo-backend — Journey Rescue API
 
 Node.js 20+, Express, TypeScript, PostgreSQL. This is the backend repository for
 the synthetic AEP Journey Rescue demo.
