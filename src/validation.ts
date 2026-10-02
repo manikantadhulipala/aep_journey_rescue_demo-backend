@@ -14,3 +14,15 @@ export const listQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(500).default(100),
   offset: z.coerce.number().int().min(0).max(100_000).default(0),
 });
+
+export const assistantPromptSchema = z.object({
+  prompt: z.string().trim().min(5).max(500),
+  currentSettings: audienceQuerySchema.partial().optional(),
+});
+
+export const activationRequestSchema = z.object({
+  destinationId: z.enum(["braze_mock", "meta_mock", "webhook_mock"]),
+  audienceName: z.string().trim().min(3).max(100).default("Journey Rescue — High-Intent Abandoners"),
+  rules: audienceQuerySchema,
+  confirmSimulation: z.literal(true),
+});

@@ -1,0 +1,125 @@
+{
+  "info": {
+    "_postman_id": "cbd7e802-83cf-4faa-8b9b-593aa810c274",
+    "name": "Journey Rescue API — Local Demo",
+    "description": "Requests for the local synthetic audience API. No request connects to Adobe Experience Platform or a live activation destination.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4000" },
+    { "key": "customerId", "value": "C003" },
+    { "key": "destinationId", "value": "braze_mock" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/health"
+      }
+    },
+    {
+      "name": "Dashboard summary and sources",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/dashboard"
+      }
+    },
+    {
+      "name": "Evaluate audience (expected four)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/audience?asOf=2026-09-30&searchDays=14&abandonDays=14&bookingDays=7"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Four synthetic profiles qualify', function () {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.qualifiedCustomerIds).to.eql(['C003', 'C006', 'C008', 'C010']);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Search profiles",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/profiles?q=C003&limit=100&offset=0"
+      }
+    },
+    {
+      "name": "Profile details and events",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/profiles/{{customerId}}"
+      }
+    },
+    {
+      "name": "Search journey events",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/events?q=Hawaii&limit=100&offset=0"
+      }
+    },
+    {
+      "name": "Sources and XDM mapping",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/sources"
+      }
+    },
+    {
+      "name": "Destination catalogue (simulated)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/destinations"
+      }
+    },
+    {
+      "name": "AI-assisted rule draft (offline heuristic)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"prompt\": \"Travelers who searched in the last 21 days, abandoned in the last 10 days, and no booking in the last 5 days\",\n  \"currentSettings\": {\n    \"asOf\": \"2026-09-30\",\n    \"searchDays\": 14,\n    \"abandonDays\": 14,\n    \"bookingDays\": 7\n  }\n}"
+        },
+        "url": "{{baseUrl}}/api/assistant/suggest"
+      }
+    },
+    {
+      "name": "Simulate activation (count only)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"destinationId\": \"{{destinationId}}\",\n  \"audienceName\": \"Journey Rescue — High-Intent Abandoners\",\n  \"rules\": {\n    \"asOf\": \"2026-09-30\",\n    \"searchDays\": 14,\n    \"abandonDays\": 14,\n    \"bookingDays\": 7\n  },\n  \"confirmSimulation\": true\n}"
+        },
+        "url": "{{baseUrl}}/api/activations"
+      }
+    },
+    {
+      "name": "Activation run audit history",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/activations?limit=100&offset=0"
+      }
+    }
+  ]
+}

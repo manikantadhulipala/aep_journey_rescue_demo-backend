@@ -4,8 +4,16 @@ import helmet from "helmet";
 import { ZodError } from "zod";
 import { pool } from "./db.js";
 import { evaluateAudience } from "./audience.js";
+import { suggestTravelAudienceRules } from "./assistant.js";
 import type { Customer, JourneyEvent } from "./types.js";
-import { audienceQuerySchema, listQuerySchema } from "./validation.js";
+import { audienceQuerySchema, assistantPromptSchema, activationRequestSchema, listQuerySchema } from "./validation.js";
+import { randomUUID } from "node:crypto";
+
+const destinations = [
+  { id: "braze_mock", name: "Braze", type: "Customer engagement", mode: "simulation", description: "Simulated customer engagement audience sync.", icon: "✳" },
+  { id: "meta_mock", name: "Meta Custom Audiences", type: "Paid media", mode: "simulation", description: "Simulated hashed-identifier audience export. No identifiers are exported.", icon: "◉" },
+  { id: "webhook_mock", name: "Webhook Preview", type: "Developer endpoint", mode: "simulation", description: "Simulated downstream event delivery with count-only payload.", icon: "⌁" },
+] as const;
 
 export const app = express();
 app.disable("x-powered-by");
@@ -136,6 +144,99 @@ app.get("/api/sources", async (_request, response, next) => {
       "SELECT source_id, file_name, display_name, record_type, xdm_class, record_count, loaded_at FROM demo_sources ORDER BY array_position(ARRAY['crm','web','mobile','intent','bookings'], source_id)",
     );
     response.json({ items: result.rows });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post("/api/assistant/suggest", async (request, response) => {
+  const parsed = assistantPromptSchema.safeParse(request.body);
+  if (!parsed.success) {
+    response.status(400).json({ error: "Invalid rule-assistant request.", details: parsed.error.flatten() });
+    return;
+  }
+
+  const suggestion = suggestTravelAudienceRules(parsed.data.prompt, parsed.data.currentSettings);
+  if (!suggestion.supported) {
+    response.status(422).json({
+      error: "This offline demo assistant only drafts rules for the travel journey sample.",
+      supportedExample: suggestion.supportedExample,
+    });
+    return;
+  }
+  response.json(suggestion);
+});
+
+app.get("/api/destinations", (_request, response) => {
+  response.json({ items: destinations, liveConnections: false });
+});
+
+app.get("/api/activations", async (request, response, next) => {
+  try {
+    const parsed = listQuerySchema.safeParse(request.query);
+    if (!parsed.success) {
+      response.status(400).json({ error: "Invalid activation query.", details: parsed.error.flatten() });
+      return;
+    }
+    const { limit, offset } = parsed.data;
+    const [runs, total] = await Promise.all([
+      pool.query(
+        `SELECT activation_id, audience_name, destination_id, destination_name, status,
+                qualified_count, rules, pii_transferred, created_at
+         FROM activation_runs ORDER BY created_at DESC LIMIT $1 OFFSET $2`,
+        [limit, offset],
+      ),
+      pool.query<{ count: string }>("SELECT count(*)::text AS count FROM activation_runs"),
+    ]);
+    response.json({ items: runs.rows, total: Number(total.rows[0]?.count ?? 0), limit, offset });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post("/api/activations", async (request, response, next) => {
+  try {
+    const parsed = activationRequestSchema.safeParse(request.body);
+    if (!parsed.success) {
+      response.status(400).json({ error: "Invalid activation request.", details: parsed.error.flatten() });
+      return;
+    }
+    const destination = destinations.find((item) => item.id === parsed.data.destinationId);
+    if (!destination) {
+      response.status(400).json({ error: "Unsupported destination." });
+      return;
+    }
+    const [customers, events] = await Promise.all([
+      pool.query<Customer>("SELECT * FROM customers ORDER BY customer_id"),
+      pool.query<JourneyEvent>("SELECT event_id, customer_id, event_type, destination, session_id, occurred_at, source FROM journey_events"),
+    ]);
+    const result = evaluateAudience(customers.rows, events.rows, parsed.data.rules);
+    if (!result.qualifiedCount) {
+      response.status(422).json({ error: "The current audience is empty. Review the preview before activating." });
+      return;
+    }
+    const activationId = randomUUID();
+    const inserted = await pool.query(
+      `INSERT INTO activation_runs (
+        activation_id, audience_name, destination_id, destination_name, status,
+        qualified_count, rules, pii_transferred
+      ) VALUES ($1,$2,$3,$4,'simulated',$5,$6::jsonb,false)
+      RETURNING activation_id, audience_name, destination_id, destination_name, status,
+                qualified_count, rules, pii_transferred, created_at`,
+      [
+        activationId,
+        parsed.data.audienceName,
+        destination.id,
+        destination.name,
+        result.qualifiedCount,
+        JSON.stringify(parsed.data.rules),
+      ],
+    );
+    response.status(201).json({
+      run: inserted.rows[0],
+      message: "Simulation completed. No customer identifiers or profile data were transmitted.",
+      liveConnection: false,
+    });
   } catch (error) {
     next(error);
   }
