@@ -105,7 +105,10 @@
       "name": "Simulate activation (count only)",
       "request": {
         "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Idempotency-Key", "value": "postman-demo-activation-001" }
+        ],
         "body": {
           "mode": "raw",
           "raw": "{\n  \"destinationId\": \"{{destinationId}}\",\n  \"audienceName\": \"Journey Rescue — High-Intent Abandoners\",\n  \"rules\": {\n    \"asOf\": \"2026-09-30\",\n    \"searchDays\": 14,\n    \"abandonDays\": 14,\n    \"bookingDays\": 7\n  },\n  \"confirmSimulation\": true\n}"

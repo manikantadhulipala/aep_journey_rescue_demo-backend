@@ -2,6 +2,39 @@ import type { AudienceRules, Customer, Evaluation, JourneyEvent } from "./types.
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+export interface AudienceCheckRow extends Customer {
+  has_recent_search: boolean;
+  has_recent_abandonment: boolean;
+  has_recent_booking: boolean;
+}
+
+export function evaluationFromChecks(
+  checks: Pick<AudienceCheckRow, "marketing_consent" | "loyalty_tier" | "travel_intent_score" | "has_recent_search" | "has_recent_abandonment" | "has_recent_booking">,
+): Evaluation {
+  const result = {
+    consent: checks.marketing_consent,
+    intent: checks.loyalty_tier === "GOLD"
+      || checks.loyalty_tier === "PLATINUM"
+      || checks.travel_intent_score >= 0.8,
+    search: checks.has_recent_search,
+    abandoned: checks.has_recent_abandonment,
+    completed: checks.has_recent_booking,
+  };
+
+  const reasons: string[] = [];
+  if (!result.consent) reasons.push("No marketing consent");
+  if (!result.intent) reasons.push("Intent or loyalty threshold not met");
+  if (!result.search) reasons.push("No recent flight search");
+  if (!result.abandoned) reasons.push("No recent abandoned booking");
+  if (result.completed) reasons.push("Recent completed booking");
+
+  return {
+    qualifies: result.consent && result.intent && result.search && result.abandoned && !result.completed,
+    checks: result,
+    reasons,
+  };
+}
+
 function withinWindow(event: JourneyEvent, asOf: string, days: number): boolean {
   const eventTime = Date.parse(event.occurred_at);
   const anchor = Date.parse(`${asOf}T23:59:59.999Z`);
@@ -14,31 +47,15 @@ export function evaluateCustomer(
   rules: AudienceRules,
 ): Evaluation {
   const customerEvents = events.filter((event) => event.customer_id === customer.customer_id);
-  const checks = {
-    consent: customer.marketing_consent,
-    intent: customer.loyalty_tier === "GOLD"
-      || customer.loyalty_tier === "PLATINUM"
-      || customer.travel_intent_score >= 0.8,
-    search: customerEvents.some((event) =>
+  return evaluationFromChecks({
+    ...customer,
+    has_recent_search: customerEvents.some((event) =>
       event.event_type === "flight_search" && withinWindow(event, rules.asOf, rules.searchDays)),
-    abandoned: customerEvents.some((event) =>
+    has_recent_abandonment: customerEvents.some((event) =>
       event.event_type === "booking_abandoned" && withinWindow(event, rules.asOf, rules.abandonDays)),
-    completed: customerEvents.some((event) =>
+    has_recent_booking: customerEvents.some((event) =>
       event.event_type === "booking_completed" && withinWindow(event, rules.asOf, rules.bookingDays)),
-  };
-
-  const reasons: string[] = [];
-  if (!checks.consent) reasons.push("No marketing consent");
-  if (!checks.intent) reasons.push("Intent or loyalty threshold not met");
-  if (!checks.search) reasons.push("No recent flight search");
-  if (!checks.abandoned) reasons.push("No recent abandoned booking");
-  if (checks.completed) reasons.push("Recent completed booking");
-
-  return {
-    qualifies: checks.consent && checks.intent && checks.search && checks.abandoned && !checks.completed,
-    checks,
-    reasons,
-  };
+  });
 }
 
 export function evaluateAudience(

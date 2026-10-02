@@ -12,6 +12,23 @@ permissions:
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: journey_rescue
+          POSTGRES_USER: journey_demo
+          POSTGRES_PASSWORD: journey_demo
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U journey_demo -d journey_rescue"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://journey_demo:journey_demo@localhost:5432/journey_rescue
+      TEST_DATABASE_URL: postgres://journey_demo:journey_demo@localhost:5432/journey_rescue
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -19,6 +36,9 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm run db:migrate
+      - run: npm run seed
       - run: npm test
+      - run: npm run test:postgres
       - run: npm run build
       - run: npm audit

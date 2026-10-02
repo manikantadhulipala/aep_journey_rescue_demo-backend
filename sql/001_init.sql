@@ -26,6 +26,8 @@ CREATE TABLE IF NOT EXISTS journey_events (
 
 CREATE INDEX IF NOT EXISTS journey_events_customer_time_idx
   ON journey_events (customer_id, occurred_at DESC);
+CREATE INDEX IF NOT EXISTS journey_events_customer_type_time_idx
+  ON journey_events (customer_id, event_type, occurred_at DESC);
 CREATE INDEX IF NOT EXISTS journey_events_type_time_idx
   ON journey_events (event_type, occurred_at DESC);
 

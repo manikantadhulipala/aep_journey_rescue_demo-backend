@@ -1,4 +1,5 @@
 import pg from "pg";
+import type { QueryResultRow } from "pg";
 
 const { Pool } = pg;
 const connectionString = process.env.DATABASE_URL;
@@ -15,6 +16,13 @@ export const pool = new Pool({
   idleTimeoutMillis: 30_000,
   connectionTimeoutMillis: 5_000,
 });
+
+export interface Queryable {
+  query<T extends QueryResultRow = QueryResultRow>(
+    text: string,
+    values?: unknown[],
+  ): Promise<{ rows: T[]; rowCount: number | null }>;
+}
 
 pool.on("error", (error) => {
   console.error("Unexpected PostgreSQL pool error.", error);
